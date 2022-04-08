@@ -1,0 +1,2 @@
+sudo mongodump --db DB_NAME --out FILE_PATH/mongodb/`date +"%d-%m-%y"`
+sudo mongorestore --db DB_NAME --drop DB_NAME

@@ -1,0 +1,89 @@
+<div id="message_box" style="display: none;"></div>
+
+<div class="login-box-body">
+    <p class="login-box-msg"><%= helper_fns.trans('sign_in_to_start_your_session') %></p>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="btn-group btn-group-justified login-lang-switcher" style="margin-bottom: 20px;">
+                <a href="<%= helper_fns.router('admin.change.locale') %>?locale=en" class="btn btn-primary btn-flat <%= getLocale() == 'en' ? 'disabled' : '' %>"><%= helper_fns.trans('english') %></a>
+                <a href="<%= helper_fns.router('admin.change.locale') %>?locale=ar" class="btn btn-primary btn-flat <%= getLocale() == 'ar' ? 'disabled' : '' %>"><%= helper_fns.trans('arabic') %></a>
+            </div>
+        </div>
+    </div>
+    
+    <form id="login-form">
+        <div class="form-group has-feedback">
+            <input type="email" class="form-control login_input" name="email" placeholder="<%= helper_fns.trans('email') %>" value="">
+            <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        </div>
+        <div class="form-group has-feedback">
+            <input type="password" class="form-control login_input" placeholder="<%= helper_fns.trans('password') %>" name="password" value="">
+            <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+        </div>
+        <div class="row">
+            <div class="col-xs-8">
+                <div class="checkbox icheck">
+                    <label>
+                        <input type="checkbox" name="remember_me"> <%= helper_fns.trans('remember_me') %>
+                    </label>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <button type="button" class="btn btn-success btn-block btn-flat" id="login-submit"><%= helper_fns.trans('sign_in') %></button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 text-center">
+                <a href="<%= helper_fns.router('admin.forgot.password') %>"><%= helper_fns.trans('forgot_password_lbl') %></a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    jQuery(function($) {
+        $(document).on('click','#login-submit',function(e) {
+            e.preventDefault();
+            let $loader = $('#message_box');
+            
+            $.ajax({
+                dataType : 'json',
+                type: 'POST',
+                url: '<%= helper_fns.router("admin.login") %>',
+                data: $('#login-form').serialize(),
+                beforeSend: () => {
+                    $('#login-submit').attr('disabled',true);
+                    $loader.hide();
+                },
+                error: (jqXHR, exception) => {
+                    $('#login-submit').attr('disabled',false);
+                    $loader.html(`
+                        <div class="alert alert-danger alert-dismissible">
+                            <button aria-hidden="true" class="close" data-dismiss="alert" type="button">&times;</button>
+                            ${formatErrorMessage(jqXHR, exception)}
+                        </div>
+                    `).show();
+                },
+                success: data => {
+                    $('#login-submit').html(data.success).removeClass('btn-primary').addClass('btn-success');
+                    $loader.hide();
+                    location.replace('<%= helper_fns.router("admin.dashboard.index") %>');
+                }
+            });
+        });
+
+        $(document).on('keypress', '.login_input', function(e) {
+            if(e.which == 10 || e.which == 13) {
+                e.preventDefault();
+                $('#login-submit').click();
+            }
+        });
+
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%' // optional
+        });
+    });
+</script>
